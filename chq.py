@@ -34,6 +34,19 @@ LOAN_STATUSES = LoanStatus
 
 
 def clear_pmt_line(line: str) -> str:
+    """Function to clear the "Payment discipline" line from the noncompliant value
+    of character traitsand duplicate final status
+
+    Parameters
+    ----------
+    line : str
+        "Payment discipline" line
+
+    Returns
+    -------
+    str
+        Cleaned "Payment discipline" line
+    """
     if (not line) or pd.isnull(line):
         return ""
 
@@ -48,6 +61,21 @@ def clear_pmt_line(line: str) -> str:
 def weights_by_loan_type_and_state(
     d: pd.DataFrame, microloans_only: bool = False
 ) -> pd.Series:
+    """Function to specify borrowers' credit obligations correction coefficients (adjusting weights)
+    depending on the type of loan
+
+    Parameters
+    ----------
+    d : pd.DataFrame
+        Dataset containing the credit report fields required to calculate a feature at the single borrower level
+    microloans_only : bool
+        The flag that takes the True value if only microcredits are considered, by default False
+
+    Returns
+    -------
+    pd.Series
+        Vector of adjusting weights for each customer credit obligation
+    """
     microloans = (d[COLS.deal_type] == "microloan") | (
         (d[COLS.partner_type] == "microfinance_organization")
         & ((d[COLS.deal_type] == "another") | (d[COLS.deal_type] == "syndicated_loan"))
@@ -88,6 +116,20 @@ def weights_by_loan_type_and_state(
 
 
 def loan_age_in_months(s: pd.Series) -> int:
+    """Function to calculate the number of months from the customers' credit history request date
+    to the date of credit obligation closure or the date of last information update
+    (if the loan is closed and the closing date is not available)
+
+    Parameters
+    ----------
+    s : pd.Series
+        Dataset containing the credit report fields required to calculate a feature at the single borrower level
+
+    Returns
+    -------
+    int
+        Age of loan obligation
+    """
     if s[COLS.loan_status] in {
         LOAN_STATUSES.active_wo_overdue,
         LOAN_STATUSES.active_w_overdue,
@@ -108,6 +150,19 @@ def loan_age_in_months(s: pd.Series) -> int:
 
 
 def specific_mean_overdue_by_ovd_line(line: str) -> float:
+    """Function to calculate weighted payments overdue for each specific loan obligation of the borrower
+
+    Parameters
+    ----------
+    line : str
+        Cleaned "Payment discipline" line
+
+    Returns
+    -------
+    float
+        Weighted loan payments' overdue
+    """
+
     def calc_summand(ndx: int, pmt_cat_symbol: str) -> int:
         return (num_of_payments - (ndx + 1) + 1) * (
             int(pmt_cat_symbol) if pmt_cat_symbol.isdigit() else 0
@@ -130,6 +185,22 @@ def specific_mean_overdue_by_ovd_line(line: str) -> float:
 
 
 def chq(d: pd.DataFrame, microloans_only: bool, col: str) -> pd.DataFrame:
+    """Function to calculate credit history quality score
+
+    Parameters
+    ----------
+    d : pd.DataFrame
+        Dataset containing the credit report fields required to calculate a feature at the single borrower level
+    microloans_only : bool
+        The flag that takes the True value if only microcredits are considered, by default False
+    col : str
+        The name of the data set column that will contain the feature values
+
+    Returns
+    -------
+    pd.DataFrane
+        Source data set containing calculated CHQ value
+    """
     d[COLS.payment_discipline_cleansed] = (
         d[COLS.payment_discipline].astype(str).apply(clear_pmt_line)
     )
