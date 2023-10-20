@@ -1,5 +1,9 @@
 # Credit history Quality Score
 
+The attribute «credit history quality» (CHQ) is calculated as the weighted categorized average of the client’s delay and is a variant of the assessment of solvency calculated for all loans of the client.
+This average depends on a number of attributes: the date of validity of the loan, the type of loan, the dynamics of payments / arrears for each of the loans. Obviously, recent microloans are many times more important and interesting than two-year consumer loans: all this is taken into account in the feature calculation formula.
+We will use the «Payment discipline» credit history (CH) attribute to calculate the CHQ feature value. This attribute contains information about the timeliness of payments under the loan or loan agreement. The attribute value is a string consisting of a number of digits (symbols), with the leftmost symbol corresponding to the month of the date on which the credit report (CR) was requested. If you move one bit to the right, you get a value for the previous month; if you move two bits to the right, a value that was two months ago and so on.
+
 Values of "Payment Discipline" attribute bits:
 | Contract Status                        | BCH Designation | Designation Used for Feature Calculation            |
 | ------------------------------------- | ----------------------- | --------------------------------------------------- |
